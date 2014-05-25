@@ -7,7 +7,17 @@ import main.model.MyState
  */
 object MyMain {
   def main(args : Array[String]) = {
-    val s = MyState(
+    var s = new MyState()
+    s = s.stateByPutting(s.positions("A7"),true).
+          stateByPutting(s.positions("A4"),true).
+          stateByPutting(s.positions("A1"),true).
+          stateByPutting(s.positions("D1"),true).
+          stateByPutting(s.positions("G1"),true).
+          stateByPutting(s.positions("D3"),true).
+          stateByPutting(s.positions("D2"),true)
+    println(s)
+    println(s.closedMills(true))
+
 
   }
 }

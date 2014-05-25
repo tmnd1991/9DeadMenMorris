@@ -83,8 +83,11 @@ class MyState (private var _phase : Int = 1,
     }
     free==0 //se sono zero allora non posso muovermi :( LOST
   }
+/*
+  def twoPcsConf(c : Boolean) : Int = {
 
-
+  }
+*/
   private var _pieces = scala.collection.mutable.Map[Boolean,Option[List[Position]]](true->None,false->None)
   def pieces(c : Boolean) : List[Position] = {
     if (_pieces(c) == None)
@@ -96,6 +99,18 @@ class MyState (private var _phase : Int = 1,
     if (_pieces(c)==None)
       pieces(c)
     _pieces(c).get.size
+  }
+  private var _bPieces = scala.collection.mutable.Map[Boolean,Option[Int]](true->None,false->None)
+  def blockedPieces(c : Boolean) : Int = {
+    if (_bPieces(c)==None)
+      _bPieces(c) = Some(pieces(c).filter(p => isBlocked(p)).size)
+    _bPieces(c).get
+  }
+
+  def isBlocked(p : Position) : Boolean = {
+    (positions(p.name).neighbourhood(0).map(s => positions(s)) ++
+      positions(p.name).neighbourhood(1).map(s => positions(s))).
+      filter(pp => pp.content==None).size==0 //se tra i neighbours ce ne sono 0 None allora è blocked
   }
 
   def closedMills(c : Boolean) : Int = {
@@ -113,6 +128,7 @@ class MyState (private var _phase : Int = 1,
         toCheck = toCheck.filterNot(pp => pp isInRow p.row)
         toRet += 1
       }
+      toCheck = toCheck.filterNot(pp => pp==p)
     }
     toRet
   }
