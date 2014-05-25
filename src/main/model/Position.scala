@@ -10,6 +10,10 @@ class Position(val name : String,
     //def canMoveTo(p : Position) : Boolean = ((neighbourhood contains p.name) && p.content==None)
     def isNeighbourOf(p : Position) : Boolean = neighbourhood contains p.name
     def isEmpty : Boolean = content==None
+    def row : Char = name(1)
+    def col : Char = name(0)
+    def isInRow(r : Char) : Boolean = row == r
+    def isInCol(c : Char) : Boolean = col == c
     override def toString : String = {
       content match {
         case Some(true) => "x"

@@ -84,6 +84,39 @@ class MyState (private var _phase : Int = 1,
     free==0 //se sono zero allora non posso muovermi :( LOST
   }
 
+
+  private var _pieces = scala.collection.mutable.Map[Boolean,Option[List[Position]]](true->None,false->None)
+  def pieces(c : Boolean) : List[Position] = {
+    if (_pieces(c) == None)
+      _pieces(c) = Some(positions.values.filter(p => p.content == Some(c)).toList)
+    _pieces(c).get
+  }
+
+  def nrPieces(c : Boolean) : Int = {
+    if (_pieces(c)==None)
+      pieces(c)
+    _pieces(c).get.size
+  }
+
+  def closedMills(c : Boolean) : Int = {
+    var toCheck = pieces(c)
+    var toRet = 0
+    while(toCheck.size>0){
+      val p = toCheck.head
+      require(p.content!=None)
+      require(p.content.get==c)
+      if (isPartOfMillR(p,c,List(),0)){
+        toCheck = toCheck.filterNot(pp => pp isInCol p.col)
+        toRet += 1
+      }
+      if (isPartOfMillR(p,c,List(),1)){
+        toCheck = toCheck.filterNot(pp => pp isInRow p.row)
+        toRet += 1
+      }
+    }
+    toRet
+  }
+
   def isPartOfMill(p : Position, c : Boolean) : Boolean = {
       require(p.content!=None)
       require(p.content.get==c)
@@ -111,19 +144,6 @@ class MyState (private var _phase : Int = 1,
           positions(s)
       else
           throw new IllegalArgumentException()
-  }
-
-  def calcPhaseOneResults : PhaseOneResult = {
-      if (Phase!=1)
-          throw new Exception("Wrong game phase")
-      /*var closesMorris : Boolean
-      var closedMorris : Int
-      var oppoPcsBlocked : Int
-      var ownedPcs : Int
-      var twoPcsConf : Int
-      var threePcsConf : Int
-      */
-      new PhaseOneResult(true,1,1,1,1,1)
   }
 
   override def toString : String = {
