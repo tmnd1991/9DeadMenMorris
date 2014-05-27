@@ -15,9 +15,16 @@ object MyMain {
     var n = new Node(new MyState(true,""),new ConcreteHeuristic())
     var i = 0
     var toMove = true
-    while(i<100){
-      println(n.data)
+    println(n.data)
+    while(i<1000){
+      println(i)
       n = nextMove(n,toMove)._1
+      println(toMove+" to move:")
+      println(n.data.stringMove)
+      println(n.data)
+      if (n.data.hasWon(toMove))
+        println("won")
+      n.eraseParent
       toMove = !toMove
       i=i+1
     }
@@ -26,7 +33,7 @@ object MyMain {
 
   def nextMove(n : Node, toMove: Boolean) : Tuple2[Node,String] = {
     val r = alphabeta(n,5,toMove,true)
-    (r._1,r._1.firstMove)
+    (r._1.firstNode,r._1.firstMove)
   }
 
   def alphabeta(node : Node, depth : Int, toMove : Boolean, maximizingPlayer : Boolean) : Tuple2[Node,Float]=

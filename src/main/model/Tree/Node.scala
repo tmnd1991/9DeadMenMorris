@@ -9,7 +9,7 @@ import main.model.Heuristic.Heuristic
  */
 class Node (_data : => MyState,
             costCalculator : Heuristic,
-            val parent : Node = null,
+            var parent : Node = null,
             val player : Boolean = false){
 
   val isEmpty = parent==null
@@ -30,6 +30,15 @@ class Node (_data : => MyState,
       _childrens = StateGenerator.nextStates(data).map(s => new Node(s,costCalculator,this))
     _childrens
   }
+
+  def firstNode : Node = {
+    if (parent.parent==null)
+      return this
+    else
+      parent.firstNode
+  }
+
+  def eraseParent = parent = null
 
   def firstMove : String = {
     if (parent.parent==null)
