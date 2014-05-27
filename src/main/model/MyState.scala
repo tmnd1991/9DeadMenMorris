@@ -1,6 +1,8 @@
 package main.model
 
-class MyState (private var _phase : Int = 1,
+class MyState (val toMove : Boolean,
+               val stringMove : String,
+               private var _phase : Int = 1,
                val positions : Map[String,Position] = MyState.emptyPositions,
                val removed : Map[Boolean,Int] = Map(true->0,false->0)){
 
@@ -15,6 +17,7 @@ class MyState (private var _phase : Int = 1,
       require(positions(p.name).content == None)
       require(Phase==1)
       require(isLegalToRemove(toRemove,c))
+      var moveString = p.name
       val newMap = collection.mutable.Map(positions.toSeq: _*)
       val newRemoved = collection.mutable.Map(removed.toSeq: _*)
       newMap.remove(p.name)
@@ -23,10 +26,11 @@ class MyState (private var _phase : Int = 1,
         newMap.remove(toRemove.get.name)
         newMap(toRemove.get.name)=new Position(toRemove.get.name)
         newRemoved(toRemove.get.content.get) = newRemoved(toRemove.get.content.get)+1
+        moveString += toRemove.get.name
       }
       val newPhase = if (onBoard(true)+eaten(true)+onBoard(false)+eaten(false) == 18) 2
                      else 1
-      new MyState(newPhase,Map(newMap.toList: _*),Map(newRemoved.toList: _*))
+      new MyState(!toMove,moveString,newPhase,Map(newMap.toList: _*),Map(newRemoved.toList: _*))
   }
 
   def stateByMoving(o : Position, d : Position, c : Boolean, toRemove : Option[Position] = None) : MyState = {
@@ -38,6 +42,7 @@ class MyState (private var _phase : Int = 1,
     //require mossa possibile, diversa tra phase2 and phase3
     require(Phase==2 || Phase==3)
     require(isLegalToRemove(toRemove,c))
+    var moveString = o.name+d.name
     val newMap = collection.mutable.Map(positions.toSeq: _*)
     val newRemoved = collection.mutable.Map(removed.toSeq: _*)
     newMap.remove(o.name)
@@ -48,10 +53,11 @@ class MyState (private var _phase : Int = 1,
       newMap.remove(toRemove.get.name)
       newMap(toRemove.get.name)=new Position(toRemove.get.name)
       newRemoved(toRemove.get.content.get) = newRemoved(toRemove.get.content.get)+1
+      moveString+=toRemove.get.name
     }
     val newPhase = if (onBoard(!c)==3) 3
                    else 2
-    new MyState(newPhase,Map(newMap.toList: _*), Map(newRemoved.toList: _*))
+    new MyState(!toMove,moveString,newPhase,Map(newMap.toList: _*), Map(newRemoved.toList: _*))
   }
 
   def onBoard(c : Boolean) : Int = positions.values.count(p => p.content==Some(c))
@@ -67,7 +73,8 @@ class MyState (private var _phase : Int = 1,
 
   def removable(c : Boolean) : List[Position] = positions.values.filter(p => isLegalToRemove(Some(p),!c)).toList
 
-  def hasWon(c : Boolean) : Boolean = onBoard(!c)<3 || cantMove(!c)
+  def hasWon(c : Boolean) : Boolean = if (Phase==1) false
+                                      else onBoard(!c)<3 || cantMove(!c)
 
   def hasLost(c : Boolean) : Boolean = hasWon(!c)
 
@@ -133,8 +140,16 @@ class MyState (private var _phase : Int = 1,
     toRet
   }
 
+  val emptyPositions : List[Position] = positions.values.filter(p => p.content==None).toList
+
+  def removablePieces(c : Boolean) : List[Position] = pieces(c).filterNot(p => isPartOfMill(p,c))
+
+  def moveCreatesMill(p : Position, c : Boolean) : Boolean = couldBePartOfMill(p,c)
+  def moveCreatesMill(o : Position, d : Position,  c : Boolean) = couldBePartOfMill(o,d,c)
+
   def isPartOfMill(p : Position, c : Boolean) : Boolean = {
-      require(p.content!=None)
+      if (p.content!=Some(c))
+        return false
       require(p.content.get==c)
       val nsRes = isPartOfMillR(p,c,List(),0)
       val weRes = isPartOfMillR(p,c,List(),1)
@@ -153,6 +168,23 @@ class MyState (private var _phase : Int = 1,
         }
         return false
       }
+  }
+  def couldBePartOfMill(o : Position, d : Position, c : Boolean) = stateByMoving(o,d,c).isPartOfMill(d,c)
+
+  def couldBePartOfMill(p : Position, c : Boolean) : Boolean = {
+    val nsRes = couldBePartOfMillR(p,c,List(),0)
+    val weRes = couldBePartOfMillR(p,c,List(),1)
+    nsRes || weRes
+  }
+
+  def couldBePartOfMillR(p : Position, c : Boolean, excluded : List[Position], d : Int) : Boolean = {
+    if (excluded.size==2)
+      true
+    else {
+      for {pos <- p.neighbourhood(d).map(s => getPosition(s)) if (!excluded.contains(pos))}
+        return isPartOfMillR(pos, c, (excluded.::(p)), d)
+      return false
+    }
   }
 
   def getPosition(s : String) : Position = {

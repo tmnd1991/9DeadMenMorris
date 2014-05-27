@@ -8,7 +8,7 @@ class Position(val name : String,
     
     
     //def canMoveTo(p : Position) : Boolean = ((neighbourhood contains p.name) && p.content==None)
-    def isNeighbourOf(p : Position) : Boolean = neighbourhood contains p.name
+    def isNeighbourOf(p : Position) : Boolean = (neighbourhood(0) contains p.name) || (neighbourhood(1) contains p.name)
     def isEmpty : Boolean = content==None
     def row : Char = name(1)
     def col : Char = name(0)
