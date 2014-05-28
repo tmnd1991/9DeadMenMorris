@@ -14,28 +14,26 @@ object MyMain {
   def main(args : Array[String]) = {
     var n = new Node(new MyState(true,""),new ConcreteHeuristic())
     var i = 0
-    var toMove = true
     println(n.data)
     while(i<1000){
       println(i)
-      n = nextMove(n,toMove)._1
-      println(toMove+" to move:")
+      n = nextMove(n)._1
+      println(n.data.toMove+" to move:")
       println(n.data.stringMove)
       println(n.data)
-      if (n.data.hasWon(toMove))
+      if (n.data.hasWon(n.data.toMove))
         println("won")
       n.eraseParent
-      toMove = !toMove
       i=i+1
       //Console.readLine()
     }
 
   }
 
-  def nextMove(n : Node, toMove: Boolean) : Tuple2[Node,String] = {
+  def nextMove(n : Node) : Tuple2[Node,String] = {
     val deep = if (n.data.Phase==1) 5
-               else 8
-    val r = alphabeta(n,deep,toMove,true)
+               else 9
+    val r = alphabeta(n,deep,n.data.toMove,true)
     (r._1.firstNode,r._1.firstMove)
   }
 
