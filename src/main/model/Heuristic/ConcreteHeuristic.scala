@@ -40,8 +40,8 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
     val ownBlockedPieces = future.blockedPieces(player)
     val oppoBlockedPieces = future.blockedPieces(!player)
     val ownedPieces = future.nrPieces(player)
-    val twoPcsConf = 0 // TODO future.twoPcsConf(player)
-    val threePcsConf = 0 //TODO future.threePcsConf(player)
+    val twoPcsConf = future.twoPcsConf(player)
+    val threePcsConf = future.threePcsConf(player)
     (closedMills * p1_nmr + closesMill * p1_cls + ownBlockedPieces * p1_owbp + oppoBlockedPieces * p1_opbp + ownedPieces * p1_npc +
       twoPcsConf * p1_2pc + threePcsConf * p1_3pc)
   }

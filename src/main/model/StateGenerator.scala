@@ -19,10 +19,10 @@ object StateGenerator {
     for (p <- s.emptyPositions){
       if (s.moveCreatesMill(p,s.toMove)){
         for(pp <- s.removablePieces(!s.toMove))
-          toRet ::= s.stateByPutting(p,s.toMove,Some(pp))
+          toRet ::= s.stateByPutting(p,Some(pp))
       }
       else
-        toRet ::= s.stateByPutting(p,s.toMove)
+        toRet ::= s.stateByPutting(p)
     }
     toRet
   }
@@ -36,9 +36,9 @@ object StateGenerator {
       for(p <- possibleDest){
         if(s.moveCreatesMill(pc,p,s.toMove))
           for(pp <- s.removablePieces(!s.toMove))
-            toRet ::= s.stateByMoving(pc,p,s.toMove,Some(pp))
+            toRet ::= s.stateByMoving(pc,p,Some(pp))
         else
-          toRet ::= s.stateByMoving(pc,p,s.toMove)
+          toRet ::= s.stateByMoving(pc,p)
       }
     }
     toRet
@@ -48,19 +48,17 @@ object StateGenerator {
     //sono io in fase 3 o l'altro ? :D
     val myPcs = s.pieces(s.toMove)
     if (myPcs.length>3)
-    {
       phaseTwoNextStates(s)
-    }
     else{
       var toRet = List[MyState]()
       for (pp <- myPcs;
-          p <- s.emptyPositions) {
+           p <- s.emptyPositions) {
         if (s.moveCreatesMill(p, s.toMove)) {
           for (pp <- s.removablePieces(!s.toMove))
-            toRet ::= s.stateByMoving(pp, p, s.toMove, Some(pp))
+            toRet ::= s.stateByMoving(pp, p, Some(pp))
         }
         else
-            toRet ::= s.stateByMoving(pp, p, s.toMove)
+            toRet ::= s.stateByMoving(pp, p)
       }
       toRet
     }

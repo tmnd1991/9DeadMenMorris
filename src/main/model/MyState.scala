@@ -13,15 +13,15 @@ class MyState (val toMove : Boolean,
       _phase = p
   }
 
-  def stateByPutting(p : Position, c : Boolean, toRemove : Option[Position] = None) : MyState = {
+  def stateByPutting(p : Position, toRemove : Option[Position] = None) : MyState = {
       require(positions(p.name).content == None)
       require(Phase==1)
-      require(isLegalToRemove(toRemove,c))
+      require(isLegalToRemove(toRemove,toMove))
       var moveString = p.name
       val newMap = collection.mutable.Map(positions.toSeq: _*)
       val newRemoved = collection.mutable.Map(removed.toSeq: _*)
       newMap.remove(p.name)
-      newMap(p.name) = new Position(p.name,Some(c))
+      newMap(p.name) = new Position(p.name,Some(toMove))
       if (toRemove!=None){
         newMap.remove(toRemove.get.name)
         newMap(toRemove.get.name)=new Position(toRemove.get.name)
@@ -33,29 +33,28 @@ class MyState (val toMove : Boolean,
       new MyState(!toMove,moveString,newPhase,Map(newMap.toList: _*),Map(newRemoved.toList: _*))
   }
 
-  def stateByMoving(o : Position, d : Position, c : Boolean, toRemove : Option[Position] = None) : MyState = {
+  def stateByMoving(o : Position, d : Position, toRemove : Option[Position] = None) : MyState = {
     require(positions(d.name).content == None) // la casella deve essere vuota
-    require(positions(o.name).content != None) // la casella di partenza deve essere piena
-    require(positions(o.name).content.get == c)// deve esserci una pedina del giocatore che muove ;)
-    if (Phase == 2 || onBoard(c)>3) //anche se siamo in phase3 ma io ho più pedine non posso muovere ovunque ;)
+    require(positions(o.name).content == Some(toMove)) // nella casella deve esserci una pedina del giocatore che muove ;)
+    require(positions(o.name).content.get == toMove)//
+    if (Phase == 2 || onBoard(toMove)>3) //anche se siamo in phase3 ma io ho più pedine non posso muovere ovunque ;)
       require(positions(o.name).isNeighbourOf(positions(d.name)))
-    //require mossa possibile, diversa tra phase2 and phase3
     require(Phase==2 || Phase==3)
-    require(isLegalToRemove(toRemove,c))
+    require(isLegalToRemove(toRemove))
     var moveString = o.name+d.name
     val newMap = collection.mutable.Map(positions.toSeq: _*)
     val newRemoved = collection.mutable.Map(removed.toSeq: _*)
     newMap.remove(o.name)
     newMap(o.name) = new Position(o.name)
     newMap.remove(d.name)
-    newMap(d.name) = new Position(d.name,Some(c))
+    newMap(d.name) = new Position(d.name,Some(toMove))
     if (toRemove!=None){
       newMap.remove(toRemove.get.name)
       newMap(toRemove.get.name)=new Position(toRemove.get.name)
       newRemoved(toRemove.get.content.get) = newRemoved(toRemove.get.content.get)+1
       moveString+=toRemove.get.name
     }
-    val newPhase = if (onBoard(!c)==3) 3
+    val newPhase = if (onBoard(!toMove)==3) 3
                    else 2
     new MyState(!toMove,moveString,newPhase,Map(newMap.toList: _*), Map(newRemoved.toList: _*))
   }
@@ -64,10 +63,10 @@ class MyState (val toMove : Boolean,
 
   def eaten(c : Boolean) : Int = removed(c)
 
-  def isLegalToRemove(p : Option[Position], c : Boolean) : Boolean = {
+  def isLegalToRemove(p : Option[Position], c : Boolean = !toMove) : Boolean = {
       p match {
         case None => true
-        case _ => !isPartOfMill(p.get,!c)
+        case _ => !isPartOfMill(p.get,c)
       }
   }
 
@@ -169,7 +168,7 @@ class MyState (val toMove : Boolean,
         return false
       }
   }
-  def couldBePartOfMill(o : Position, d : Position, c : Boolean) = stateByMoving(o,d,c).isPartOfMill(d,c)
+  def couldBePartOfMill(o : Position, d : Position, c : Boolean) = stateByMoving(o,d).isPartOfMill(d,c)
 
   def couldBePartOfMill(p : Position, c : Boolean) : Boolean = {
     val nsRes = couldBePartOfMillR(p,c,List(),0)
@@ -187,6 +186,38 @@ class MyState (val toMove : Boolean,
     }
   }
 
+  def twoPcsConf(c : Boolean) : Int = {
+    var toRet = 0
+    var checked = Array[List[Position]](List(),List())
+    for (p <- pieces(c);
+         i <- 0 to 1){
+      if(p.neighbourhood(i).length==2){
+        val neighbours = p.neighbourhood(i).map(s=>positions(s))
+        checked(i) :::= neighbours
+        if (neighbours.count(pp => pp.content==p.content)==1 &&
+            neighbours.count(pp => pp.content==None)==1)
+          toRet+=1
+      }
+      else{ //lunghezza 1
+        val pp = positions(p.neighbourhood(i).head)
+        val ppp = pp.neighbourhood(i).map(s => positions(s)).filter(ppp => ppp!=p).head
+        checked(i):::= List(pp,ppp)
+        if ((pp.content == p.content && ppp.content == None) ||
+            (ppp.content == p.content && pp.content == None))
+          toRet+=1
+      }
+    }
+    toRet
+  }
+
+  def threePcsConf(c : Boolean) : Int = {
+    var toRet = 0
+    for(conf <- MyState.ThreePcsConf)
+      if (conf.count(s => positions(s).content==Some(c))==3)
+        toRet+=1
+    toRet
+  }
+
   def getPosition(s : String) : Position = {
       if (positions.contains(s))
           positions(s)
@@ -196,20 +227,21 @@ class MyState (val toMove : Boolean,
 
   override def toString : String = {
     var toRet = ""
-    toRet+=getPosition("A7")+"--"+getPosition("D7")+"--"+getPosition("G7")+"\n"
-    toRet+="-"+getPosition("B6")+"-"+getPosition("D6")+"-"+getPosition("F6")+"-\n"
-    toRet+="--"+getPosition("C5")+getPosition("D5")+getPosition("E5")+"--\n"
-    toRet+=""+getPosition("A4")+getPosition("B4")+getPosition("C4")+"-"+
+    toRet+="7"+getPosition("A7")+"--"+getPosition("D7")+"--"+getPosition("G7")+"\n"
+    toRet+="6-"+getPosition("B6")+"-"+getPosition("D6")+"-"+getPosition("F6")+"-\n"
+    toRet+="5--"+getPosition("C5")+getPosition("D5")+getPosition("E5")+"--\n"
+    toRet+="4"+getPosition("A4")+getPosition("B4")+getPosition("C4")+"-"+
               getPosition("E4")+getPosition("F4")+getPosition("G4")+"\n"
-    toRet+="--"+getPosition("C3")+getPosition("D3")+getPosition("E3")+"--\n"
-    toRet+="-"+getPosition("B2")+"-"+getPosition("D2")+"-"+getPosition("F2")+"-\n"
-    toRet+=getPosition("A1")+"--"+getPosition("D1")+"--"+getPosition("G1")+"\n"
+    toRet+="3--"+getPosition("C3")+getPosition("D3")+getPosition("E3")+"--\n"
+    toRet+="2-"+getPosition("B2")+"-"+getPosition("D2")+"-"+getPosition("F2")+"-\n"
+    toRet+="1"+getPosition("A1")+"--"+getPosition("D1")+"--"+getPosition("G1")+"\n"
+    toRet+=" abcdefg"
     toRet
   }
 }
 
 object MyState{
-    def emptyPositions : Map[String,Position] = {
+    val emptyPositions : Map[String,Position] =
         Map(
         "A1" -> new Position("A1"),
         "D1" -> new Position("D1"),
@@ -239,5 +271,20 @@ object MyState{
         "F4" -> new Position("F4"),
         "G4" -> new Position("G4")
         )
-    }
+  val ThreePcsConf = List(
+    List("A1","A7","G1"),
+    List("G1","A7","G7"),
+    List("G1","A1","G7"),
+    List("A1","A7","G7"),
+
+    List("B2","B6","F2"),
+    List("B6","F6","F2"),
+    List("B2","F2","F6"),
+    List("B2","B6","F6"),
+
+    List("C5","C3","E3"),
+    List("C3","E5","E3"),
+    List("C5","E5","E3"),
+    List("C3","C5","E5")
+  )
 }

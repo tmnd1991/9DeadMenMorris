@@ -27,12 +27,15 @@ object MyMain {
       n.eraseParent
       toMove = !toMove
       i=i+1
+      //Console.readLine()
     }
 
   }
 
   def nextMove(n : Node, toMove: Boolean) : Tuple2[Node,String] = {
-    val r = alphabeta(n,5,toMove,true)
+    val deep = if (n.data.Phase==1) 5
+               else 8
+    val r = alphabeta(n,deep,toMove,true)
     (r._1.firstNode,r._1.firstMove)
   }
 
