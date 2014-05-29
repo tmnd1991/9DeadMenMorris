@@ -6,4 +6,5 @@ import main.model.Position
  */
 case class ShiftMove(o : Position, d: Position) extends Move{
   require (o.col == d.col || o.row == d.row)
+  override def toString : String = "ShiftMove "+o.name+" -> "+d.name
 }

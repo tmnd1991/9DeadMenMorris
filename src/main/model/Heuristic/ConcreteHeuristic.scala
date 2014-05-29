@@ -38,10 +38,9 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
     }
   }
   private def calcFirst(actual : MyState, future : MyState, player : Boolean) : Float ={
-    var closedMills = 0
-    if (actual!=null)
-      closedMills = actual.closedMills(player)
-    val closesMill = future.closedMills(player)-closedMills
+    val closedMills = future.closedMills(player)
+    val closesMill = if (actual != null && actual.moveCreatesMill(future.move,player)) 1
+                     else 0
     val ownBlockedPieces = future.blockedPieces(player)
     val oppoBlockedPieces = future.blockedPieces(!player)
     val ownedPieces = future.onBoard(player)
@@ -51,10 +50,9 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
       twoPcsConf * p1_2pc + threePcsConf * p1_3pc) * nextRandom
   }
   private def calcSecond(actual : MyState, future : MyState, player : Boolean) : Float ={
-    var closedMills = 0
-    if (actual!=null)
-      closedMills = actual.closedMills(player)
-    val closesMill = actual.closedMills(player)-future.closedMills(player)
+    val closedMills = future.closedMills(player)
+    val closesMill = if (actual != null && actual.moveCreatesMill(future.move,player)) 1
+                     else 0
     val ownBlockedPieces = future.blockedPieces(player)
     val oppoBlockedPieces = future.blockedPieces(!player)
     val ownedPieces = future.onBoard(player)
@@ -66,10 +64,9 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
   }
 
   private def calcThird(actual : MyState, future : MyState, player : Boolean) : Float ={
-    var closedMills = 0
-    if (actual!=null)
-      closedMills = actual.closedMills(player)
-    val closesMill = future.closedMills(player)-closedMills
+    val closedMills = future.closedMills(player)
+    val closesMill = if (actual != null && actual.moveCreatesMill(future.move,player)) 1
+                     else 0
     val twoPcsConf = future.twoPcsConf(player)
     val threePcsConf = future.threePcsConf(player)
     val won = if (future.hasWon(player)) 1 else 0

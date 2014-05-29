@@ -16,22 +16,13 @@ object MyMain {
     val board = Map( true->List("A7","G7","C5","E5","E4","C3"), false->List("D6","F6","C3","B2","B4","C4"))
     var i = 0
     println(n.data)
-    var lastEatenT = n.data.eaten(true)
-    var lastEatenF = n.data.eaten(false)
     while(!n.data.hasWon(n.data.toMove)){
-      println(i)
-      val start = System.currentTimeMillis
+      println("Turn: "+i)
       n = nextMove(n)._1
-      val end = System.currentTimeMillis()
-      if (end-start>60000){
-        println("ziocane")
-        System.exit(0)
-      }
+      println("removed: "+n.data.removed)
+      println("onTable: "+n.data.nrPieces)
       println("phase: "+n.data.phase)
-      println(n.data.move)
       println(n.data)
-      if (n.data.hasWon(n.data.toMove))
-        println("won")
       println(n.data.toMove+" to move:")
       i=i+1
     }

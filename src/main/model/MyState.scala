@@ -8,6 +8,7 @@ class MyState (val toMove : Boolean,
                val phase : MyPhase = MyPhase.Phase1,
                val positions : Map[String,Position] = MyState.emptyPositions,
                val removed : Map[Boolean,Int] = Map(true->0,false->0)){
+
   private val _pieces = scala.collection.mutable.Map[Boolean,Option[List[Position]]](true->None,false->None)
   private var _bPieces = scala.collection.mutable.Map[Boolean,Option[Int]](true->None,false->None)
 
@@ -35,7 +36,7 @@ class MyState (val toMove : Boolean,
     require(actualP.content==None)
     val newMap = positions-actualP.name+(actualP.name->new Position(actualP.name,Some(toMove)))
     val allPedine = newMap.values.count(p => p.content!=None) + removed(true) + removed(false)
-    val newPhase = if (allPedine == 18) MyPhase.Phase2
+    val newPhase = if (allPedine >= 18) MyPhase.Phase2
                    else MyPhase.Phase1
     new MyState(!toMove,PutMove(actualP),newPhase,newMap,removed)
   }
@@ -49,7 +50,7 @@ class MyState (val toMove : Boolean,
     val newMap = positions+(actualP.name->new Position(actualP.name,Some(toMove))) +
                   (actualToRem.name->new Position(actualToRem.name))
     val newRemoved = removed+(actualToRem.content.get->(removed(actualToRem.content.get)+1))
-    val allPedine = newMap.values.count(p => p.content!=None) + removed(true) + removed(false)
+    val allPedine = newMap.values.count(p => p.content!=None) + newRemoved(true) + newRemoved(false)
     val newPhase = if (allPedine == 18) MyPhase.Phase2
     else MyPhase.Phase1
     new MyState(!toMove,PutRemoveMove(actualP,actualToRem),newPhase,newMap,newRemoved)
@@ -119,61 +120,16 @@ class MyState (val toMove : Boolean,
     new MyState(!toMove,FlyMove(actualO,actualD),phase,newPositions,newRemoved)
   }
 
-  /*
-  private def stateByPutting(p : Position, toRemove : Option[Position] = None) : MyState = {
-      require(positions(p.name).content == None)
-      require(phase==MyPhase.Phase1)
-      require(isLegalToRemove(toRemove,toMove))
-      var moveString = p.name
-      var newMap = positions
-      var newRemoved = removed
-      newMap-=p.name
-      newMap+=(p.name->new Position(p.name,Some(toMove)))
-      if (toRemove!=None){
-        newMap-=toRemove.get.name
-        newMap+=(toRemove.get.name->new Position(toRemove.get.name))
-        newRemoved+=(toRemove.get.content.get->(newRemoved(toRemove.get.content.get)+1))
-        moveString += toRemove.get.name
-      }
-
-      val allPedine = newMap.values.count(p => p.content!=None) + newRemoved(true) + newRemoved(false)
-      var newPhase = if (allPedine == 18) MyPhase.Phase2
-                     else MyPhase.Phase1
-
-      new MyState(!toMove,moveString,newPhase,newMap,newRemoved)
-  }
-
-  private def stateByMoving(o : Position, d : Position, toRemove : Option[Position] = None) : MyState = {
-    require(positions(d.name).content == None) // la casella deve essere vuota
-    require(positions(o.name).content == Some(toMove)) // nella casella deve esserci una pedina del giocatore che muove ;)
-    require(positions(o.name).content.get == toMove)//
-    if (phase == MyPhase.Phase2 || onBoard(toMove)>3) //anche se siamo in phase3 ma io ho più pedine non posso muovere ovunque ;)
-      require(positions(o.name).isNeighbourOf(positions(d.name)))
-    require(phase==MyPhase.Phase2 || phase==MyPhase.Phase3)
-    require(isLegalToRemove(toRemove))
-    var moveString = o.name+d.name
-    var newMap = positions
-    var newRemoved = removed
-    newMap -= o.name
-    newMap += (o.name->new Position(o.name))
-    newMap -= d.name
-    newMap += (d.name->new Position(d.name,Some(toMove)))
-    if (toRemove!=None){
-      newMap -= toRemove.get.name
-      newMap += (toRemove.get.name->new Position(toRemove.get.name))
-      newRemoved += (toRemove.get.content.get -> (newRemoved(toRemove.get.content.get)+1))
-      moveString+=toRemove.get.name
-    }
-    val newPhase = if (newRemoved(!toMove)==6 || newRemoved(toMove)==6) MyPhase.Phase3
-                   else MyPhase.Phase2
-    new MyState(!toMove,moveString,newPhase,newMap,newRemoved)
-  }
-  */
-
   def onBoard(c : Boolean) : Int = {
     if (_pieces(c)==None)
       pieces(c)
     _pieces(c).get.size
+  }
+
+  def nrPieces : Map[Boolean,Int] = {
+    val t = onBoard(true)
+    val f = onBoard(false)
+    Map[Boolean,Int]() + (true->t) + (false->f)
   }
 
   def eaten(c : Boolean) : Int = removed(c)
@@ -205,8 +161,6 @@ class MyState (val toMove : Boolean,
       _pieces(c) = Some(positions.values.filter(p => p.content == Some(c)).toList)
     _pieces(c).get
   }
-
-
 
   def blockedPieces(c : Boolean) : Int = {
     if (_bPieces(c)==None)
@@ -290,14 +244,6 @@ class MyState (val toMove : Boolean,
 
   def moveCreatesMill(m : Move, c : Boolean) : Boolean = stateAfterMove(m).isPartOfMill(m.d,c)
 
-/*
-  def isPartOfMill(p : Position, c : Boolean) : Boolean = {
-      val actualPos = positions(p.name)
-      if (actualPos.content!=Some(c))
-        return false
-      isPartOfMillR(actualPos,c,List(),0) || isPartOfMillR(actualPos,c,List(),1)
-  }
-*/
   def isPartOfMill(p : Position, c : Boolean) : Boolean = {
     val actualPos = positions(p.name)
     if (actualPos.content == Some(c))
@@ -318,40 +264,6 @@ class MyState (val toMove : Boolean,
     }
   }
 
-   //AM I THAT GOOD? :D
-  /*
-  def isPartOfMillR(p : Position, c : Boolean, excluded : List[Position], d : Int) : Boolean = {
-      if (excluded.size==2 && p.content == Some(c))
-        true
-      else {
-        if (p.content == Some(c)) {
-          var notExcluded : List[Position] = p.neighbourhood(d).map(s => getPosition(s)).filterNot(p => excluded contains p)
-          for (pos <- notExcluded)
-            return isPartOfMillR(pos, c, (excluded.::(p)), d)
-        }
-        return false
-      }
-  }
-  */
-  /*
-  def couldBePartOfMill(o : Position, d : Position, c : Boolean) = stateByMoving(o,d).isPartOfMill(d,c)
-
-  def couldBePartOfMill(p : Position, c : Boolean) : Boolean = {
-    val nsRes = couldBePartOfMillR(p,c,List(),0)
-    val weRes = couldBePartOfMillR(p,c,List(),1)
-    nsRes || weRes
-  }
-
-  def couldBePartOfMillR(p : Position, c : Boolean, excluded : List[Position], d : Int) : Boolean = {
-    if (excluded.size==2)
-      true
-    else {
-      for {pos <- p.neighbourhood(d).map(s => getPosition(s)) if (!excluded.contains(pos))}
-        return isPartOfMillR(pos, c, (excluded.::(p)), d)
-      return false
-    }
-  }
-  */
   def twoPcsConf(c : Boolean) : Int = {
     var toRet = 0
     var checked = Array[List[Position]](List(),List())
