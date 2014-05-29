@@ -5,9 +5,7 @@ class Position(val name : String,
     //neighbourhood(0) = neighbours in NS direction
     //neighbourhood(1) = neighbours in WE direction
     val neighbourhood : Array[List[String]] = Position.Neighbours(this)
-    
-    
-    //def canMoveTo(p : Position) : Boolean = ((neighbourhood contains p.name) && p.content==None)
+
     def isNeighbourOf(p : Position) : Boolean = (neighbourhood(0) contains p.name) || (neighbourhood(1) contains p.name)
     def isEmpty : Boolean = content==None
     def row : Char = name(1)
@@ -20,6 +18,10 @@ class Position(val name : String,
         case Some(false) => "o"
         case _ => "."
       }
+    }
+    override def equals(o: Any) = o match {
+      case that: Position => that.name.equalsIgnoreCase(this.name)
+      case _ => false
     }
 }
 

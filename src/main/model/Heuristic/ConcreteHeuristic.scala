@@ -1,7 +1,7 @@
 package main.model.Heuristic
 
-import main.model.MyState
-
+import main.model.{MyPhase, MyState}
+import scala.util.Random
 /**
  * Created by tmnd on 25/05/14.
  */
@@ -24,11 +24,16 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
                         val p3_3pc : Float = 20,
                         val p3_cls : Float = 1000,
                         val p3_win : Float = 10000) extends Heuristic{
+
+  val r = new Random()
+  private def nextRandom : Float = {
+    (r.nextFloat()/Float.MaxValue)*2
+  }
   override def calc(actual : MyState, future : MyState, player : Boolean) : Float ={
-    actual.Phase match{
-      case 1 => calcFirst(actual, future, player)
-      case 2 => calcSecond(actual, future, player)
-      case 3 => calcThird(actual, future, player)
+    actual.phase match{
+      case MyPhase.Phase1 => calcFirst(actual, future, player)
+      case MyPhase.Phase2 => calcSecond(actual, future, player)
+      case MyPhase.Phase3 => calcThird(actual, future, player)
       case _ => throw new Exception("Nonsense Phase")
     }
   }
@@ -39,11 +44,11 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
     val closesMill = future.closedMills(player)-closedMills
     val ownBlockedPieces = future.blockedPieces(player)
     val oppoBlockedPieces = future.blockedPieces(!player)
-    val ownedPieces = future.nrPieces(player)
+    val ownedPieces = future.onBoard(player)
     val twoPcsConf = future.twoPcsConf(player)
     val threePcsConf = future.threePcsConf(player)
     (closedMills * p1_nmr + closesMill * p1_cls + ownBlockedPieces * p1_owbp + oppoBlockedPieces * p1_opbp + ownedPieces * p1_npc +
-      twoPcsConf * p1_2pc + threePcsConf * p1_3pc)
+      twoPcsConf * p1_2pc + threePcsConf * p1_3pc) * nextRandom
   }
   private def calcSecond(actual : MyState, future : MyState, player : Boolean) : Float ={
     var closedMills = 0
@@ -52,12 +57,12 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
     val closesMill = actual.closedMills(player)-future.closedMills(player)
     val ownBlockedPieces = future.blockedPieces(player)
     val oppoBlockedPieces = future.blockedPieces(!player)
-    val ownedPieces = future.nrPieces(player)
+    val ownedPieces = future.onBoard(player)
     val won = if (future.hasWon(player)) 1 else 0
-    val openedMorris = 0 //TODO future.openedMorris(player)
-    val doubleMorris = 0 //TODO future.doubleMorris(player)
-    closesMill * p2_cls + closedMills * p2_nmr + ownBlockedPieces * p2_owbp + oppoBlockedPieces * p2_opbp + ownedPieces * p2_npc +
-      openedMorris * p2_opm + doubleMorris * p2_dom + won * p2_win
+    val openedMorris = future.openedMorris(player)
+    val doubleMorris = future.doubleMorris(player)
+    (closesMill * p2_cls + closedMills * p2_nmr + ownBlockedPieces * p2_owbp + oppoBlockedPieces * p2_opbp + ownedPieces * p2_npc +
+      openedMorris * p2_opm + doubleMorris * p2_dom + won * p2_win) * nextRandom
   }
 
   private def calcThird(actual : MyState, future : MyState, player : Boolean) : Float ={
@@ -68,6 +73,6 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
     val twoPcsConf = future.twoPcsConf(player)
     val threePcsConf = future.threePcsConf(player)
     val won = if (future.hasWon(player)) 1 else 0
-    p3_cls * closesMill + p3_2pc * twoPcsConf + p3_3pc * threePcsConf + p3_win * won
+    (p3_cls * closesMill + p3_2pc * twoPcsConf + p3_3pc * threePcsConf + p3_win * won) * nextRandom
   }
 }

@@ -3,13 +3,14 @@ package main.model.Tree
 import groovy.lang.Tuple
 import main.model.{MyState, StateGenerator}
 import main.model.Heuristic.Heuristic
+import main.model.Moves.Move
 
 /**
  * Created by tmnd on 26/05/14.
  */
 class Node (_data : => MyState,
             costCalculator : Heuristic,
-            var parent : Node = null,
+            val parent : Node = null,
             val player : Boolean = false){
 
   val isEmpty = parent==null
@@ -31,19 +32,14 @@ class Node (_data : => MyState,
     _childrens
   }
 
-  def firstNode : Node = {
-    if (parent.parent==null)
+  def firstNode(p : Node) : Node = {
+    if (parent==p)
       return this
     else
-      parent.firstNode
+      parent.firstNode(p)
   }
 
-  def eraseParent = parent = null
-
-  def firstMove : String = {
-    if (parent.parent==null)
-      return this.data.stringMove
-    else
-      parent.firstMove
+  def firstMove(p : Node) : Move = {
+    firstNode(p).data.move
   }
 }

@@ -1,15 +1,17 @@
 package main.model
 
+import main.model.Moves._
+
 /**
  * Created by tmnd on 26/05/14.
  */
 
 object StateGenerator {
   def nextStates(s : MyState) : List[MyState] = {
-    s.Phase match {
-      case 1 => phaseOneNextStates(s)
-      case 2 => phaseTwoNextStates(s)
-      case 3 => phaseThreeNextStates(s)
+    s.phase match {
+      case MyPhase.Phase1 => phaseOneNextStates(s)
+      case MyPhase.Phase2 => phaseTwoNextStates(s)
+      case MyPhase.Phase3 => phaseThreeNextStates(s)
       case _ => throw new IllegalArgumentException("Nonsense Phase")
     }
   }
@@ -17,12 +19,11 @@ object StateGenerator {
   private def phaseOneNextStates(s : MyState) : List[MyState] = {
     var toRet = List[MyState]()
     for (p <- s.emptyPositions){
-      if (s.moveCreatesMill(p,s.toMove)){
+      if (s.moveCreatesMill(PutMove(p),s.toMove))
         for(pp <- s.removablePieces(!s.toMove))
-          toRet ::= s.stateByPutting(p,Some(pp))
-      }
+          toRet ::= s.stateAfterMove(PutRemoveMove(p,pp))
       else
-        toRet ::= s.stateByPutting(p)
+        toRet ::= s.stateAfterMove(PutMove(p))
     }
     toRet
   }
@@ -34,11 +35,11 @@ object StateGenerator {
       val possibleDest = pc.neighbourhood(0).map(p => s.positions(p)).filter(p => p.content==None) :::
         pc.neighbourhood(1).map(p => s.positions(p)).filter(p => p.content==None)
       for(p <- possibleDest){
-        if(s.moveCreatesMill(pc,p,s.toMove))
+        if(s.moveCreatesMill(ShiftMove(pc,p),s.toMove))
           for(pp <- s.removablePieces(!s.toMove))
-            toRet ::= s.stateByMoving(pc,p,Some(pp))
+            toRet ::= s.stateAfterMove(ShiftRemoveMove(pc,p,pp))
         else
-          toRet ::= s.stateByMoving(pc,p)
+          toRet ::= s.stateAfterMove(ShiftMove(pc,p))
       }
     }
     toRet
@@ -53,12 +54,11 @@ object StateGenerator {
       var toRet = List[MyState]()
       for (pp <- myPcs;
            p <- s.emptyPositions) {
-        if (s.moveCreatesMill(p, s.toMove)) {
-          for (pp <- s.removablePieces(!s.toMove))
-            toRet ::= s.stateByMoving(pp, p, Some(pp))
-        }
+        if (s.moveCreatesMill(FlyMove(pp,p), s.toMove))
+          for (ppp <- s.removablePieces(!s.toMove))
+            toRet ::= s.stateAfterMove(FlyRemoveMove(pp,p,ppp))
         else
-            toRet ::= s.stateByMoving(pp, p)
+            toRet ::= s.stateAfterMove(FlyMove(pp, p))
       }
       toRet
     }
