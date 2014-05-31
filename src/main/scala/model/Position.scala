@@ -1,4 +1,4 @@
-package main.model
+package main.scala.model
 
 class Position(val name : String,
                val content : Option[Boolean] = None){
@@ -19,6 +19,9 @@ class Position(val name : String,
         case _ => "."
       }
     }
+
+    def toStr : String = toString //POSSIBLY SHITTY
+
     override def equals(o: Any) = o match {
       case that: Position => that.name.equalsIgnoreCase(this.name)
       case _ => false

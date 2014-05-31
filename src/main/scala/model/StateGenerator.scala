@@ -1,6 +1,6 @@
-package main.model
+package main.scala.model
 
-import main.model.Moves._
+import main.scala.model.Moves._
 
 /**
  * Created by tmnd on 26/05/14.

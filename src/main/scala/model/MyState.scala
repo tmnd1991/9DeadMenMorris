@@ -1,7 +1,8 @@
-package main.model
+package main.scala.model
 
-import main.model.MyPhase.MyPhase
-import main.model.Moves._
+import main.scala.model.Moves._
+import main.scala.model.MyPhase.MyPhase
+import java.util.StringTokenizer
 
 class MyState (val toMove : Boolean,
                val move : Move,
@@ -34,7 +35,7 @@ class MyState (val toMove : Boolean,
     val actualP = positions(m.d.name)
     require(phase==MyPhase.Phase1)
     require(actualP.content==None)
-    val newMap = positions-actualP.name+(actualP.name->new Position(actualP.name,Some(toMove)))
+    val newMap = positions+(actualP.name->new Position(actualP.name,Some(toMove)))
     val allPedine = newMap.values.count(p => p.content!=None) + removed(true) + removed(false)
     val newPhase = if (allPedine >= 18) MyPhase.Phase2
                    else MyPhase.Phase1
@@ -115,7 +116,7 @@ class MyState (val toMove : Boolean,
     require(phase==MyPhase.Phase3)
     require(isLegalToRemove(actualToRem))
     val newPositions = positions + (actualO.name -> new Position(actualO.name)) +
-      (actualD.name -> new Position(actualD.name,Some(toMove))) - actualToRem.name
+      (actualD.name -> new Position(actualD.name,Some(toMove))) + (actualToRem.name -> new Position(actualToRem.name))
     val newRemoved = removed + (actualToRem.content.get -> (removed(actualToRem.content.get)+1))
     new MyState(!toMove,FlyMove(actualO,actualD),phase,newPositions,newRemoved)
   }
@@ -147,8 +148,8 @@ class MyState (val toMove : Boolean,
     var free = 0
     for (p <- positions.values.filter(p => p.content == Some(c))){
 
-      free+=(p.neighbourhood(0).map(s => getPosition(s)) ++
-              p.neighbourhood(1).map(s => getPosition(s))).
+      free+=(p.neighbourhood(0).map(s => positions(s)) ++
+              p.neighbourhood(1).map(s => positions(s))).
         count(pp => pp.content==None) //conto le posizione vicine libere
       if (free>0) //se sono più di zero posso muovermi
         return false
@@ -297,58 +298,76 @@ class MyState (val toMove : Boolean,
     toRet
   }
 
-  def getPosition(s : String) : Position = {
-      if (positions.contains(s))
-          positions(s)
-      else
-          throw new IllegalArgumentException()
-  }
-
   override def toString : String = {
     var toRet = ""
-    toRet+="7"+getPosition("A7")+"--"+getPosition("D7")+"--"+getPosition("G7")+"\n"
-    toRet+="6-"+getPosition("B6")+"-"+getPosition("D6")+"-"+getPosition("F6")+"-\n"
-    toRet+="5--"+getPosition("C5")+getPosition("D5")+getPosition("E5")+"--\n"
-    toRet+="4"+getPosition("A4")+getPosition("B4")+getPosition("C4")+"-"+
-              getPosition("E4")+getPosition("F4")+getPosition("G4")+"\n"
-    toRet+="3--"+getPosition("C3")+getPosition("D3")+getPosition("E3")+"--\n"
-    toRet+="2-"+getPosition("B2")+"-"+getPosition("D2")+"-"+getPosition("F2")+"-\n"
-    toRet+="1"+getPosition("A1")+"--"+getPosition("D1")+"--"+getPosition("G1")+"\n"
+    toRet+="7"+positions("A7")+"--"+positions("D7")+"--"+positions("G7")+"\n"
+    toRet+="6-"+positions("B6")+"-"+positions("D6")+"-"+positions("F6")+"-\n"
+    toRet+="5--"+positions("C5")+positions("D5")+positions("E5")+"--\n"
+    toRet+="4"+positions("A4")+positions("B4")+positions("C4")+"-"+
+              positions("E4")+positions("F4")+positions("G4")+"\n"
+    toRet+="3--"+positions("C3")+positions("D3")+positions("E3")+"--\n"
+    toRet+="2-"+positions("B2")+"-"+positions("D2")+"-"+positions("F2")+"-\n"
+    toRet+="1"+positions("A1")+"--"+positions("D1")+"--"+positions("G1")+"\n"
     toRet+=" abcdefg"
     toRet
+  }
+
+  def toStateString : String = {
+    val delimiter = "_"
+    var s = (toMove match{
+      case true  => "1"
+      case false => "0"
+    })
+    s +=delimiter
+
+    s += (phase match {
+      case MyPhase.Phase1 => "1"
+      case MyPhase.Phase2 => "2"
+      case MyPhase.Phase3 => "3"
+    })
+    s += delimiter
+
+    s += move.toStr + delimiter
+
+    positions.foreach(kv => s += kv._2.toStr + kv._1 + delimiter)
+
+    s += removed(true) + delimiter
+    s += removed(false) + delimiter
+
+    return s
   }
 }
 
 object MyState{
     val emptyPositions : Map[String,Position] =
         Map(
-        "A1" -> new Position("A1"),
-        "D1" -> new Position("D1"),
-        "G1" -> new Position("G1"),
-        "A7" -> new Position("A7"),
-        "D7" -> new Position("D7"),
-        "G7" -> new Position("G7"),
+          ("A1", new Position("A1")),
+          ("D1", new Position("D1")),
+          ("G1", new Position("G1")),
+          ("A7", new Position("A7")),
+          ("D7", new Position("D7")),
+          ("G7", new Position("G7")),
         
-        "B2" -> new Position("B2"),
-        "D2" -> new Position("D2"),
-        "F2" -> new Position("F2"),
-        "B6" -> new Position("B6"),
-        "D6" -> new Position("D6"),
-        "F6" -> new Position("F6"),
+          ("B2", new Position("B2")),
+          ("D2", new Position("D2")),
+          ("F2", new Position("F2")),
+          ("B6", new Position("B6")),
+          ("D6", new Position("D6")),
+          ("F6", new Position("F6")),
         
-        "C3" -> new Position("C3"),
-        "D3" -> new Position("D3"),
-        "E3" -> new Position("E3"),
-        "C5" -> new Position("C5"),
-        "D5" -> new Position("D5"),
-        "E5" -> new Position("E5"),
+          ("C3", new Position("C3")),
+          ("D3", new Position("D3")),
+          ("E3", new Position("E3")),
+          ("C5", new Position("C5")),
+          ("D5", new Position("D5")),
+          ("E5", new Position("E5")),
         
-        "A4" -> new Position("A4"),
-        "B4" -> new Position("B4"),
-        "C4" -> new Position("C4"),
-        "E4" -> new Position("E4"),
-        "F4" -> new Position("F4"),
-        "G4" -> new Position("G4")
+          ("A4", new Position("A4")),
+          ("B4", new Position("B4")),
+          ("C4", new Position("C4")),
+          ("E4", new Position("E4")),
+          ("F4", new Position("F4")),
+          ("G4", new Position("G4"))
         )
   def map(m : Map[Boolean,List[String]]) : Map[String,Position] = {
     var toRet : Map[String,Position] = emptyPositions
@@ -377,4 +396,47 @@ object MyState{
     List("C5","E5","E3"),
     List("C3","C5","E5")
   )
+  def stateFromStr(s : String) : MyState = {
+    val tokenizer = new StringTokenizer(s,"_")
+    val toMove = tokenizer.nextToken match {
+      case "0" => false
+      case "1" => true
+      case _   => throw new Exception("Invalid player")
+    }
+
+    val phase = tokenizer.nextToken match {
+      case "1" => MyPhase.Phase1
+      case "2" => MyPhase.Phase2
+      case "3" => MyPhase.Phase3
+      case _   => throw new Exception("Invalid Phase")
+    }
+
+    val move = Move.moveFromStr(tokenizer.nextToken,phase)
+
+    var positions : Map[String,Position] = Map()
+
+    for (i <- 0 to 23) {
+      val token = tokenizer.nextToken
+      val pl = token.head
+      val po = token.tail
+      pl match {
+        case 'x' => positions += (po -> new Position(po,Some(true)))
+        case 'o' => positions += (po -> new Position(po,Some(false)))
+        case '.' => positions += (po -> new Position(po))
+        case _   => new Exception("Invalid content")
+      }
+    }
+
+    val removed = Map((true,  tokenizer.nextToken.toInt),
+                      (false, tokenizer.nextToken.toInt))
+
+    new MyState(toMove,move,phase,positions,removed)
+
+  }
+  /*
+  def fromString(toMove : Boolean, move : String, phase : Int, board : String, removedT : Int, removedF : Int) : MyState = {
+
+    new MyState(toMove,Move.strToMove)
+  }
+  */
 }

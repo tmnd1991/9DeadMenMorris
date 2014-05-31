@@ -1,7 +1,8 @@
-package main.model.Heuristic
+package main.scala.model.Heuristic
 
-import main.model.{MyPhase, MyState}
+import main.scala.model.{MyPhase, MyState}
 import scala.util.Random
+
 /**
  * Created by tmnd on 25/05/14.
  */
@@ -27,7 +28,7 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
 
   val r = new Random()
   private def nextRandom : Float = {
-    (r.nextFloat()/Float.MaxValue)*2
+    Math.abs(r.nextGaussian/Double.MaxValue*2).toFloat
   }
   override def calc(actual : MyState, future : MyState, player : Boolean) : Float ={
     actual.phase match{
