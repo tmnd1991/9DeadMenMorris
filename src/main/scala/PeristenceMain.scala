@@ -15,26 +15,37 @@ object PeristenceMain extends App{
     var toMove = true
     var n : AbstractNode = new SlickNode(None, None, new MyState(toMove, NoMove).toStateString)
     //adding root
-    DBConnection.conn.withSession(implicit session => SlickNode.nodes += n.asInstanceOf[SlickNode])
-    n = DBConnection.conn.withSession(implicit session => SlickNode.nodes.list.head)
+    SlickNode.addAll(List[SlickNode](n.asInstanceOf[SlickNode]))
+    n = SlickNode.root
     var i = 0
     println(n.data)
     while(!n.data.hasWon(n.data.toMove)){
+      val start = System.currentTimeMillis()
       println("Turn: "+i)
       n = nextMove(n)._1
       println("removed: "+n.data.removed)
       println("onTable: "+n.data.nrPieces)
       println("phase: "+n.data.phase)
+      println("id: "+n.asInstanceOf[SlickNode].id)
       println(n.data)
       println(n.data.toMove+" to move:")
       i=i+1
+      SlickNode.clean(n.asInstanceOf[SlickNode])
+      val end = System.currentTimeMillis()
+      println(end-start)
+      if (end-start>60000){
+        println("too slow")
+        System.exit(-1)
+      }
     }
-    SlickNode.session.close
   }
 
   def nextMove(n : AbstractNode) : (AbstractNode,Move) = {
-    val depth = if (n.data.phase==MyPhase.Phase1) 5
-    else 8
+    val depth = n.data.phase match{
+      case MyPhase.Phase1 => 5
+      case MyPhase.Phase2 => 6
+      case MyPhase.Phase3 => 5
+    }
     val r = alphabeta(n,depth,n.data.toMove,true)
     val firstNode = r._1.firstNode(n)
     (firstNode,firstNode.data.move)

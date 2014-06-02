@@ -1,7 +1,8 @@
 package main.scala.model.Moves
 
-import main.scala.model.MyPhase.MyPhase
+
 import main.scala.model.{MyPhase, Position}
+import it.unibo.ai.didattica.mulino.actions.Action
 
 /**
  * Created by tmnd on 29/05/14.
@@ -9,9 +10,10 @@ import main.scala.model.{MyPhase, Position}
 abstract class Move {
   def d : Position
   def toStr : String
+  def toAction : Action
 }
 object Move{
-  def moveFromStr(s : String, p : MyPhase) : Move = {
+  def moveFromStr(s : String) : Move = {
     val prefix = s.substring(0,2)
     /*
     prefix match{
@@ -44,6 +46,6 @@ object Move{
                                                   new Position(s.substring(4,6))) else
     if (prefix == ShiftRemoveMove.PREFIX) new ShiftRemoveMove(new Position(s.substring(2,4)),
                                                               new Position(s.substring(4,6)),
-                                                              new Position(s.substring(6,8))) else null
+                                                              new Position(s.substring(6,8))) else NoMove
   }
 }

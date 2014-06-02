@@ -13,6 +13,7 @@ class MyState (val toMove : Boolean,
   private val _pieces = scala.collection.mutable.Map[Boolean,Option[List[Position]]](true->None,false->None)
   private var _bPieces = scala.collection.mutable.Map[Boolean,Option[Int]](true->None,false->None)
 
+  require(move!=null)
   if (onBoard(true)+removed(true)>9)
     require(onBoard(true)+removed(true)<=9)
   if (onBoard(false)+removed(false)>9)
@@ -373,7 +374,6 @@ object MyState{
     var toRet : Map[String,Position] = emptyPositions
     for (k <- m.keys){
       for (v <- m(k)){
-        toRet -= v
         toRet += (v -> new Position(v,Some(k)))
       }
     }
@@ -411,7 +411,7 @@ object MyState{
       case _   => throw new Exception("Invalid Phase")
     }
 
-    val move = Move.moveFromStr(tokenizer.nextToken,phase)
+    val move = Move.moveFromStr(tokenizer.nextToken)
 
     var positions : Map[String,Position] = Map()
 

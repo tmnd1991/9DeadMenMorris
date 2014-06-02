@@ -19,7 +19,10 @@ case class SlickNode(id : Option[Long], parentId : Option[Long], stateString : S
 
   override def parent = {
     if (_parent == null)
-      _parent = SlickNode.findById(parentId)
+      _parent = SlickNode.findById(parentId) match{
+        case x : Some[SlickNode] => x.get
+        case None                => null
+      }
     _parent
   }
 
@@ -34,15 +37,19 @@ case class SlickNode(id : Option[Long], parentId : Option[Long], stateString : S
     _data
   }
 
-  override def eraseParent: Unit = _parent = null
+  override def eraseParent: Unit = {
+    //SlickNode.deleteParents(id.get)
+    _parent = null
+  }
 
   override def childrens: Iterable[AbstractNode] = {
     if (!_childrenGenerated){
       SlickNode.addAll(StateGenerator.nextStates(data).map(s => new SlickNode(None,id,s.toStateString)))
       _childrenGenerated = true
-      _childrens = SlickNode.findByParentId(id)
+      //_childrens = SlickNode.findByParentId(id)
     }
-    _childrens
+    //_childrens
+    SlickNode.findByParentId(id)
   }
 
 }
@@ -51,9 +58,20 @@ object SlickNode {
   val nodes = TableQuery[SlickNodes]
   implicit val session = DBConnection.conn.createSession()
   def create = nodes.ddl.create
-  def findById(x : Option[Long]) : SlickNode = nodes.filter(_.id === x).first
+  def drop = nodes.ddl.drop
+
+  def findById(x : Option[Long]) : Option[SlickNode] = nodes.filter(_.id === x).firstOption
+
   def findByParentId(x : Option[Long]) : Iterable[SlickNode] = nodes.filter(_.parentId === x).list
+
   def addAll(x : Iterable[SlickNode]) = nodes ++= x
+
+  def root = nodes.list.head
+
+  def clean(n : SlickNode) = {
+    n.eraseParent
+    nodes.filterNot(_.id === n.id).delete
+  }
 }
 
 class SlickNodes(tag: Tag) extends Table[SlickNode](tag, "NODES") {
@@ -62,6 +80,8 @@ class SlickNodes(tag: Tag) extends Table[SlickNode](tag, "NODES") {
   def parentId = column[Option[Long]]("PARENT")
 
   def stateString = column[String]("STATE")
+
+  //def parent = foreignKey("PARENT_FK", parentId, SlickNode.nodes)(_.id)
 
   def * = (id.?, parentId, stateString) <> ((SlickNode.apply _).tupled , SlickNode.unapply)
 }

@@ -29,8 +29,11 @@ object InMemoryMain extends App{
   }
 
   def nextMove(n : AbstractNode) : (AbstractNode,Move) = {
-    val depth = if (n.data.phase==MyPhase.Phase1) 5
-               else 8
+    val depth = n.data.phase match{
+      case MyPhase.Phase1 => 4
+      case MyPhase.Phase2 => 7
+      case MyPhase.Phase3 => 4
+    }
     val r = alphabeta(n,depth,n.data.toMove,true)
     val firstNode = r._1.firstNode(n)
     (firstNode,firstNode.data.move)

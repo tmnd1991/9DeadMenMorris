@@ -12,6 +12,7 @@ class Position(val name : String,
     def col : Char = name(0)
     def isInRow(r : Char) : Boolean = row == r
     def isInCol(c : Char) : Boolean = col == c
+
     override def toString : String = {
       content match {
         case Some(true) => "x"
@@ -20,7 +21,15 @@ class Position(val name : String,
       }
     }
 
-    def toStr : String = toString //POSSIBLY SHITTY
+    def toStr : String = {
+      content match {
+        case Some(true) => "x"
+        case Some(false) => "o"
+        case _ => "."
+      }
+    }
+
+    def coordinates = (""+col+row).toLowerCase
 
     override def equals(o: Any) = o match {
       case that: Position => that.name.equalsIgnoreCase(this.name)
@@ -33,7 +42,7 @@ object Position{
     returns the neighbours of the passed Position
     */
     def Neighbours(p : Position) : Array[List[String]] = {
-        p.name match {
+        p.name.toUpperCase match {
             case "A1" => Array(List("A4"),List("D1"))
             case "D1" => Array(List("D2"),List("A1","G1"))
             case "G1" => Array(List("G4"),List("D1"))

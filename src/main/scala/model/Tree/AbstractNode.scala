@@ -14,7 +14,6 @@ abstract class AbstractNode {
   def eraseParent : Unit
   def firstNode(p : AbstractNode) : AbstractNode = {
     if (parent==p || parent==null){
-      eraseParent
       return this
     }
     else
