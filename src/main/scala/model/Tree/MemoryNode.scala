@@ -29,6 +29,6 @@ class MemoryNode (_data : MyState,
       _childrens = StateGenerator.nextStates(data).map(s => new MemoryNode(s,costCalculator,this))
     _childrens
   }
-
+  override def costCalculatorInstance : Heuristic = costCalculator
   def eraseParent = _parent = null
 }

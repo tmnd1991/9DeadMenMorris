@@ -1,8 +1,8 @@
 package it.unibo.ai.didattica.mulino.actions;
 
-import java.util.Arrays;
-
 import it.unibo.ai.didattica.mulino.domain.State;
+
+import java.util.Arrays;
 
 public class Phase2 {
 	
@@ -33,9 +33,12 @@ public class Phase2 {
 		
 		// generate the new State
 		State result = new State();
-		
+
 		// replicate the current board
 		result.getBoard().putAll(currentState.getBoard());
+
+        result.setBlackCheckersOnBoard(currentState.getBlackCheckersOnBoard());
+        result.setWhiteCheckersOnBoard(currentState.getWhiteCheckersOnBoard());
 
 		// move the checker on the board
 		result.getBoard().put(currentAction.getTo(), checker);
@@ -56,6 +59,8 @@ public class Phase2 {
 		// set the phase
 		if (result.getWhiteCheckersOnBoard() == 3 || result.getBlackCheckersOnBoard() == 3)
 			result.setCurrentPhase(State.Phase.FINAL);
+        else
+            result.setCurrentPhase(State.Phase.SECOND);
 		return result;
 	}
 	

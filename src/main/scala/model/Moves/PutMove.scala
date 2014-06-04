@@ -13,6 +13,7 @@ case class PutMove(d : Position) extends Move{
   override def toAction : Action = {
     val toRet = new Phase1Action()
     toRet.setPutPosition(d.coordinates)
+    toRet.setRemoveOpponentChecker(null)
     return toRet
   }
 }

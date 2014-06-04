@@ -4,8 +4,9 @@ import collection.JavaConversions._
 import it.unibo.ai.didattica.mulino.actions._
 import it.unibo.ai.didattica.mulino.domain.State
 import main.scala.model.Moves.{NoMove, Move}
-import main.scala.model.{Position, MyState}
+import main.scala.model.{MyPhase, Position, MyState}
 import main.scala.model.Tree.{SlickNode, AbstractNode}
+
 /**
  * Created by tmnd on 01/06/14.
  */
@@ -15,9 +16,9 @@ object Converter {
   implicit def State2Node(x : State)(implicit toMove : Boolean) : AbstractNode = {
     val move = NoMove
     val phase = x.getCurrentPhase match{
-      case State.Phase.FIRST  => main.scala.model.MyPhase.Phase1
-      case State.Phase.SECOND => main.scala.model.MyPhase.Phase2
-      case State.Phase.FINAL  => main.scala.model.MyPhase.Phase3
+      case State.Phase.FIRST  => MyPhase.Phase1
+      case State.Phase.SECOND => MyPhase.Phase2
+      case State.Phase.FINAL  => MyPhase.Phase3
     }
     var positions : Map[String,Position] = Map[String,Position]()
     for (k <- x.getBoard.keySet){
@@ -31,8 +32,6 @@ object Converter {
     }
     val whiteUsed = (x.getWhiteCheckers+x.getWhiteCheckersOnBoard)
     val blackUsed = (x.getBlackCheckers+x.getBlackCheckersOnBoard)
-    println("whiteUsed : " + whiteUsed)
-    println("blackUsed : " + blackUsed )
     val removed : Map[Boolean,Int] = Map(true -> (9 - whiteUsed),
                                          false-> (9 - blackUsed))
     new SlickNode(None, None, new MyState(toMove, move, phase, positions, removed).toStateString)

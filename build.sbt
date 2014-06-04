@@ -1,3 +1,4 @@
+import AssemblyKeys._ // put this at the top of the file
 
 name := "9DeadMenMorris"
 
@@ -10,3 +11,11 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-nop" % "1.6.4",
   "com.h2database" % "h2" % "1.3.173"
 )
+
+assemblySettings
+
+mainClass in assembly := Some("Client")
+
+mainClass in (Compile, run) := Some("Client")
+
+mainClass in (Compile, packageBin) := Some("Client")

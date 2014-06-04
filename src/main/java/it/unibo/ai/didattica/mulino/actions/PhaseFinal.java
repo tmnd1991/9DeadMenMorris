@@ -36,6 +36,10 @@ public class PhaseFinal {
 		// replicate the current board
 		result.getBoard().putAll(currentState.getBoard());
 
+        //ADDED
+        result.setBlackCheckers(currentState.getBlackCheckers());
+        result.setWhiteCheckers(currentState.getWhiteCheckers());
+
 		// move the checker on the board
 		result.getBoard().put(currentAction.getTo(), checker);
 		result.getBoard().put(currentAction.getFrom(), State.Checker.EMPTY);
@@ -97,24 +101,4 @@ public class PhaseFinal {
 		if (toChecker != State.Checker.EMPTY)
 			throw new PositionNotEmptyException(to);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 }

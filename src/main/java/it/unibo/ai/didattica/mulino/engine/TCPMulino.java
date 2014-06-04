@@ -39,7 +39,7 @@ public class TCPMulino {
 		}
 		serverSocket = new ServerSocket(tcpPort);
 		connectionSocket = serverSocket.accept();
-		System.out.println("Player " + player.toString() + " connected!");
+		//System.out.println("Player " + player.toString() + " connected!");
 		in = new ObjectInputStream(new BufferedInputStream(connectionSocket.getInputStream()));
 		out = new ObjectOutputStream(connectionSocket.getOutputStream());
 	}

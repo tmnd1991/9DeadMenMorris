@@ -135,7 +135,7 @@ public class State implements Serializable {
 	
 	public static void main (String[] args) {
 		State aState = new State();
-		System.out.println(aState.toString());
+		//System.out.println(aState.toString());
 	}
 
 

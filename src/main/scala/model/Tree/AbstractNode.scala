@@ -1,5 +1,6 @@
 package main.scala.model.Tree
 
+import main.scala.model.Heuristic.Heuristic
 import main.scala.model.Moves.Move
 import main.scala.model.{MyState, StateGenerator}
 
@@ -22,4 +23,6 @@ abstract class AbstractNode {
   def firstMove(p : AbstractNode) : Move = {
     firstNode(p).data.move
   }
+
+  def costCalculatorInstance : Heuristic = null
 }

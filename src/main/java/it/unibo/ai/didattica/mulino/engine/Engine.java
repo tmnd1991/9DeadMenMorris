@@ -1,13 +1,13 @@
 package it.unibo.ai.didattica.mulino.engine;
 
-import java.io.IOException;
-
 import it.unibo.ai.didattica.mulino.actions.Action;
 import it.unibo.ai.didattica.mulino.actions.Phase1;
 import it.unibo.ai.didattica.mulino.actions.Phase2;
 import it.unibo.ai.didattica.mulino.actions.PhaseFinal;
 import it.unibo.ai.didattica.mulino.domain.State;
 import it.unibo.ai.didattica.mulino.gui.GUI;
+
+import java.io.IOException;
 
 public class Engine {
 
@@ -37,21 +37,23 @@ public class Engine {
 	
 	public void run() throws IOException {
 		Thread t;
-		System.out.println("Wating for connections...");
+		//System.out.println("Wating for connections...");
 		
 		whiteSocket = new TCPMulino(State.Checker.WHITE);
 		whiteSocket.writeState(currentState);
 		blackSocket = new TCPMulino(State.Checker.BLACK);
 		blackSocket.writeState(currentState);		
-		System.out.println(currentState.toString());
+		//System.out.println(currentState.toString());
 		
 		TCPInput whiteRunner = new TCPInput(whiteSocket);
 		TCPInput blackRunner = new TCPInput(blackSocket);
 		TCPInput tin = null;
 		
 		//while (currentState.getCurrentPhase() != State.Phase.SECOND) {
-		while (true) {
-			System.out.println("Waiting for " + currentPlayer.toString() + " move...");
+        int i = 0;
+		while (i < 100) {
+            i++;
+			//System.out.println("Waiting for " + currentPlayer.toString() + " move...");
 			switch (currentPlayer) {
 				case WHITE:
 					tin = whiteRunner;
@@ -76,12 +78,16 @@ public class Engine {
 			}
 			
 			if (t.isAlive()) {
-				System.out.println("Timeout!!!!");
+				//System.out.println("Timeout!!!!");
+                if (currentPlayer == State.Checker.BLACK)
+                    System.out.println("Player W WIN!!!");
+                else
+                    System.out.println("Player B WIN!!!");
 				System.out.println("Player " + currentPlayer.toString() + " has lost!!!");
 				System.exit(0);
 			}
 			try {
-				System.out.println("Player " + currentPlayer.toString() + " move: ");
+				//System.out.println("Player " + currentPlayer.toString() + " move: ");
 				switch (currentState.getCurrentPhase()) {
 					case FIRST :
 						currentState = Phase1.applyMove(currentState, currentAction, currentPlayer);
@@ -93,13 +99,13 @@ public class Engine {
 						currentState = PhaseFinal.applyMove(currentState, currentAction, currentPlayer);
 						break;
 					default:
-						System.out.println("Phase not recognize...");
+						//System.out.println("Phase not recognize...");
 						System.exit(-10);
 				}
 				
 				whiteSocket.writeState(currentState);
 				blackSocket.writeState(currentState);
-				System.out.println(currentState.toString());
+				//System.out.println(currentState.toString());
 				theGui.update(currentState);
 			} catch (Exception e) {
 				e.printStackTrace();

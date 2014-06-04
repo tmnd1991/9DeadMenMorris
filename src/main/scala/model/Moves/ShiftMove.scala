@@ -14,6 +14,7 @@ case class ShiftMove(o : Position, d: Position) extends Move{
     val toRet = new Phase2Action()
     toRet.setFrom(o.coordinates)
     toRet.setTo(d.coordinates)
+    toRet.setRemoveOpponentChecker(null)
     return toRet
   }
 }

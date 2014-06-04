@@ -12,6 +12,7 @@ case class FlyMove(o : Position, d : Position) extends Move{
     val toRet = new PhaseFinalAction()
     toRet.setFrom(o.coordinates)
     toRet.setTo(d.coordinates)
+    toRet.setRemoveOpponentChecker(null)
     return toRet
   }
 }

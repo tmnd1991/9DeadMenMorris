@@ -5,6 +5,7 @@ import main.scala.model.Moves.{Move, NoMove}
 import main.scala.model.{MyPhase, MyState}
 import main.scala.model.Tree.{MemoryNode, SlickNode, AbstractNode}
 import scala.slick.driver.H2Driver.simple._
+import Client._
 
 /**
  * Created by tmnd on 31/05/14.

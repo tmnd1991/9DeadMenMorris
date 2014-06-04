@@ -73,4 +73,6 @@ class ConcreteHeuristic(val p1_nmr : Float = 10, //factor to mul the number of m
     val won = if (future.hasWon(player)) 1 else 0
     (p3_cls * closesMill + p3_2pc * twoPcsConf + p3_3pc * threePcsConf + p3_win * won) * nextRandom
   }
+
+  override def toString : String = p2_cls.toString
 }

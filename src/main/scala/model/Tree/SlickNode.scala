@@ -8,10 +8,9 @@ import scala.slick.driver.H2Driver.simple._
 /**
  * Created by tmnd on 31/05/14.
  */
-case class SlickNode(id : Option[Long], parentId : Option[Long], stateString : String) extends AbstractNode{
+case class SlickNode(id : Option[Long], parentId : Option[Long], stateString : String)(implicit val costCalculator : Heuristic = Heuristic.defaultHeuristic) extends AbstractNode{
   private var _parent : AbstractNode = null
   private var _childrenGenerated = false
-  private val costCalculator = Heuristic.defaultHeuristic
   private var _childrens : Iterable[AbstractNode] = null
   private var _data : MyState = null
   private var _cost : Float = -1
@@ -52,6 +51,8 @@ case class SlickNode(id : Option[Long], parentId : Option[Long], stateString : S
     SlickNode.findByParentId(id)
   }
 
+  override def costCalculatorInstance = costCalculator
+
 }
 
 object SlickNode {
@@ -75,6 +76,7 @@ object SlickNode {
 }
 
 class SlickNodes(tag: Tag) extends Table[SlickNode](tag, "NODES") {
+
   def id = column[Long]("NODE_ID", O.PrimaryKey, O.AutoInc)
 
   def parentId = column[Option[Long]]("PARENT")
