@@ -7,7 +7,7 @@ import main.scala.model.Moves._
  */
 
 object StateGenerator {
-  def nextStates(s : MyState) : List[MyState] = {
+  def nextStates(s : MyState) : Seq[MyState] = {
     s.phase match {
       case MyPhase.Phase1 => phaseOneNextStates(s)
       case MyPhase.Phase2 => phaseTwoNextStates(s)
@@ -17,32 +17,39 @@ object StateGenerator {
   }
 
   private def phaseOneNextStates(s : MyState) : List[MyState] = {
-    var toRet = List[MyState]()
-    for (p <- s.emptyPositions){
-      if (s.moveCreatesMill(PutMove(p),s.toMove))
-        for(pp <- s.removablePieces(!s.toMove))
-          toRet ::= s.stateAfterMove(PutRemoveMove(p,pp))
-      else
-        toRet ::= s.stateAfterMove(PutMove(p))
-    }
-    toRet
+    s.emptyPositions.map{
+      p => if(s.moveCreatesMill(PutMove(p), s.toMove))
+              s.removablePieces(!s.toMove).map(pp => s.stateAfterMove(PutRemoveMove(p,pp)))
+           else List(s.stateAfterMove(PutMove(p)))
+    }.flatten
   }
 
   private def phaseTwoNextStates(s : MyState) : List[MyState] = {
-    var toRet = List[MyState]()
-    val pcs = s.pieces(s.toMove)
-    for (pc <- pcs){
-      val possibleDest = pc.neighbourhood(0).map(p => s.positions(p)).filter(p => p.content==None) :::
-        pc.neighbourhood(1).map(p => s.positions(p)).filter(p => p.content==None)
-      for(p <- possibleDest){
-        if(s.moveCreatesMill(ShiftMove(pc,p),s.toMove))
-          for(pp <- s.removablePieces(!s.toMove))
-            toRet ::= s.stateAfterMove(ShiftRemoveMove(pc,p,pp))
+//    var toRet = List[MyState]()
+//    val pcs = s.pieces(s.toMove)
+//    for (pc <- pcs){
+//      val possibleDest = pc.neighbourhood(0).map(p => s.positions(p)).filter(p => p.content==None) ::: pc.neighbourhood(1).map(p => s.positions(p)).filter(p => p.content==None)
+//
+//      for(p <- possibleDest){
+//        if(s.moveCreatesMill(ShiftMove(pc,p),s.toMove))
+//          for(pp <- s.removablePieces(!s.toMove))
+//            toRet ::= s.stateAfterMove(ShiftRemoveMove(pc,p,pp))
+//        else
+//          toRet ::= s.stateAfterMove(ShiftMove(pc,p))
+//      }
+//    }
+//    toRet
+    s.pieces(s.toMove).map{ pc =>
+      val possibleDest = pc.neighbourhood(0).map(p => s.positions(p)).filter(p => p.content==None) ::: pc.neighbourhood(1).map(p => s.positions(p)).filter(p => p.content==None)
+      possibleDest.map{p =>
+        if (s.moveCreatesMill(ShiftMove(pc,p),s.toMove))
+          s.removablePieces(!s.toMove).map(pp=>
+            s.stateAfterMove(ShiftRemoveMove(pc,p,pp))
+          )
         else
-          toRet ::= s.stateAfterMove(ShiftMove(pc,p))
+          List(s.stateAfterMove(ShiftMove(pc,p)))
       }
-    }
-    toRet
+    }.flatten.flatten
   }
 
   private def phaseThreeNextStates(s : MyState) : List[MyState] = {
@@ -51,17 +58,15 @@ object StateGenerator {
     if (myPcs.length>3)
       phaseTwoNextStates(s)
     else{
-      var toRet = List[MyState]()
       for (pp <- myPcs;
-           p <- s.emptyPositions) {
+           p <- s.emptyPositions) yield {
         if (s.moveCreatesMill(FlyMove(pp,p), s.toMove))
-          for (ppp <- s.removablePieces(!s.toMove))
-            toRet ::= s.stateAfterMove(FlyRemoveMove(pp,p,ppp))
+          for (ppp <- s.removablePieces(!s.toMove)) yield
+            s.stateAfterMove(FlyRemoveMove(pp,p,ppp))
         else
-            toRet ::= s.stateAfterMove(FlyMove(pp, p))
+            List(s.stateAfterMove(FlyMove(pp, p)))
       }
-      toRet
-    }
+    }.flatten
   }
 
 }

@@ -8,7 +8,7 @@ import it.unibo.ai.didattica.mulino.actions.Action
  * Created by tmnd on 29/05/14.
  */
 abstract class Move {
-  def d : Position
+  def destination : Position
   def toStr : String
   def toAction : Action
 }

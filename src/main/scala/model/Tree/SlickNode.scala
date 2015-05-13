@@ -4,6 +4,7 @@ import main.scala.DBConnection
 import main.scala.model.Heuristic.Heuristic
 import main.scala.model.{StateGenerator, MyState}
 import scala.slick.driver.H2Driver.simple._
+import scala.slick.jdbc.meta.MTable
 
 /**
  * Created by tmnd on 31/05/14.
@@ -58,8 +59,16 @@ case class SlickNode(id : Option[Long], parentId : Option[Long], stateString : S
 object SlickNode {
   val nodes = TableQuery[SlickNodes]
   implicit val session = DBConnection.conn.createSession()
-  def create = nodes.ddl.create
-  def drop = nodes.ddl.drop
+  def create = {
+    if (MTable.getTables("NODES").list().isEmpty) {
+      nodes.ddl.create
+    }
+
+  }
+  def drop = {
+    nodes.ddl.drop
+    nodes.ddl.create
+  }
 
   def findById(x : Option[Long]) : Option[SlickNode] = nodes.filter(_.id === x).firstOption
 

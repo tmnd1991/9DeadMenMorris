@@ -6,13 +6,13 @@ import it.unibo.ai.didattica.mulino.actions.{Phase1Action, Action}
 /**
  * Created by tmnd on 29/05/14.
  */
-case class PutMove(d : Position) extends Move{
+case class PutMove(destination : Position) extends Move{
 
-  override def toString : String = "PutMove "+d.name
-  override def toStr : String = PutMove.PREFIX+d.name
+  override def toString : String = "PutMove "+destination.name
+  override def toStr : String = PutMove.PREFIX+destination.name
   override def toAction : Action = {
     val toRet = new Phase1Action()
-    toRet.setPutPosition(d.coordinates)
+    toRet.setPutPosition(destination.coordinates)
     toRet.setRemoveOpponentChecker(null)
     return toRet
   }

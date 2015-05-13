@@ -7,7 +7,7 @@ import it.unibo.ai.didattica.mulino.actions.Action
  */
 
 object NoMove extends Move{
-  def d = null
+  val destination = null
   override def toStr : String = "NM" //TODO
   override def toAction : Action = null
 }
