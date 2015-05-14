@@ -85,61 +85,27 @@ object Client {
     if (player eq State.Checker.WHITE) {
       implicit val toMove = true
       val client: MulinoClient = new MulinoClient(State.Checker.WHITE)
-      //System.out.println("You are player " + client.getPlayer.toString + "!")
-      //System.out.println("Current state:")
       currentState = client.read
       myCurrentState = currentState
-      SlickNode.create
-      SlickNode.addAll(List[SlickNode](myCurrentState.asInstanceOf[SlickNode]))
-      myCurrentState = SlickNode.root
-      //System.out.println(currentState.toString)
+
       while (true) {
-        //System.out.println("Player " + client.getPlayer.toString + ", do your move: ")
         val r = nextMove(myCurrentState)
-        //println(r._1)
-        //println(r._2)
         client.write(r._2)
         currentState = client.read
-        //System.out.println("Effect of your move: ")
-        //System.out.println(currentState.toString)
-        //System.out.println("Waiting for your opponent move... ")
-        SlickNode.drop
-        SlickNode.create
         currentState = client.read
         myCurrentState = currentState
-        SlickNode.addAll(List[SlickNode](myCurrentState.asInstanceOf[SlickNode]))
-        myCurrentState = SlickNode.root
-        //System.out.println("Your Opponent did his move, and the result is: ")
-        //System.out.println(currentState.toString)
       }
     }
     else {
       implicit val toMove = false
       val client: MulinoClient = new MulinoClient(State.Checker.BLACK)
       currentState = client.read
-      //System.out.println("You are player " + client.getPlayer.toString + "!")
-      //System.out.println("Current state:")
-      //System.out.println(currentState.toString)
-      SlickNode.create
       while (true) {
-        //System.out.println("Waiting for your opponent move...")
         currentState = client.read
-        //System.out.println("Your Opponent did his move, and the result is: ")
-        //System.out.println(currentState.toString)
-        //System.out.println("Player " + client.getPlayer.toString + ", do your move: ")
         myCurrentState = currentState
-        //println(myCurrentState.costCalculatorInstance)
-        SlickNode.addAll(List(myCurrentState.asInstanceOf[SlickNode]))
-        myCurrentState = SlickNode.root
         val r = nextMove(myCurrentState)
-        //println(r._1)
-        //println(r._2)
         client.write(r._2)
         currentState = client.read
-        //System.out.println("Effect of your move: ")
-        //System.out.println(currentState.toString)
-        SlickNode.drop
-        SlickNode.create
       }
     }
   }
@@ -147,9 +113,9 @@ object Client {
 
   def nextMove(n : AbstractNode) : (AbstractNode,Move) = {
     val depth = n.data.phase match{
-      case MyPhase.Phase1 => 5
-      case MyPhase.Phase2 => 6
-      case MyPhase.Phase3 => 5
+      case MyPhase.Phase1 => 8
+      case MyPhase.Phase2 => 8
+      case MyPhase.Phase3 => 8
     }
     val r = alphabeta(n,depth,n.data.toMove,true)
     val firstNode = r._1.firstNode(n)

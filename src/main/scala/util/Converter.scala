@@ -5,7 +5,7 @@ import it.unibo.ai.didattica.mulino.actions._
 import it.unibo.ai.didattica.mulino.domain.State
 import main.scala.model.Moves.{NoMove, Move}
 import main.scala.model.{MyPhase, Position, MyState}
-import main.scala.model.Tree.{SlickNode, AbstractNode}
+import main.scala.model.Tree.{MemoryNode, SlickNode, AbstractNode}
 
 /**
  * Created by tmnd on 01/06/14.
@@ -34,6 +34,7 @@ object Converter {
     val blackUsed = (x.getBlackCheckers+x.getBlackCheckersOnBoard)
     val removed : Map[Boolean,Int] = Map(true -> (9 - whiteUsed),
                                          false-> (9 - blackUsed))
-    new SlickNode(None, None, new MyState(toMove, move, phase, positions, removed).toStateString)
+    //new SlickNode(None, None, new MyState(toMove, move, phase, positions, removed).toStateString)
+    new MemoryNode(new MyState(toMove,move,phase,positions,removed))
   }
 }

@@ -12,7 +12,7 @@ import main.scala.model.{MyPhase, MyState}
 object InMemoryMain extends App{
   override def main(args : Array[String]) = {
 
-    var n : AbstractNode = new MemoryNode(new MyState(true,NoMove),new ConcreteHeuristic())
+    var n : AbstractNode = new MemoryNode(new MyState(true,NoMove))(new ConcreteHeuristic())
     val board = Map( true->List("A7","G7","C5","E5","E4","C3"), false->List("D6","F6","C3","B2","B4","C4"))
     var i = 0
     println(n.data)
