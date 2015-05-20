@@ -1,7 +1,6 @@
 package main.scala.model
 
 import main.scala.model.Moves._
-
 /**
  * Created by tmnd on 26/05/14.
  */
@@ -17,11 +16,14 @@ object StateGenerator {
   }
 
   private def phaseOneNextStates(s : MyState) : List[MyState] = {
-    s.emptyPositions.map{
-      p => if(s.moveCreatesMill(PutMove(p), s.toMove))
-              s.removablePieces(!s.toMove).map(pp => s.stateAfterMove(PutRemoveMove(p,pp)))
-           else List(s.stateAfterMove(PutMove(p)))
-    }.flatten
+    s.emptyPositions.flatMap(p => if(s.moveCreatesMill(PutMove(p), s.toMove))
+      s.removablePieces(!s.toMove).map(pp => s.stateAfterMove(PutRemoveMove(p,pp)))
+    else List(s.stateAfterMove(PutMove(p))))
+//    s.emptyPositions.map{
+//      p => if(s.moveCreatesMill(PutMove(p), s.toMove))
+//              s.removablePieces(!s.toMove).map(pp => s.stateAfterMove(PutRemoveMove(p,pp)))
+//           else List(s.stateAfterMove(PutMove(p)))
+//    }.flatten
   }
 
   private def phaseTwoNextStates(s : MyState) : List[MyState] = {
@@ -39,9 +41,9 @@ object StateGenerator {
 //      }
 //    }
 //    toRet
-    s.pieces(s.toMove).map{ pc =>
+    s.pieces(s.toMove).flatMap{ pc =>
       val possibleDest = pc.neighbourhood(0).map(p => s.positions(p)).filter(p => p.content==None) ::: pc.neighbourhood(1).map(p => s.positions(p)).filter(p => p.content==None)
-      possibleDest.map{p =>
+      possibleDest.flatMap{p =>
         if (s.moveCreatesMill(ShiftMove(pc,p),s.toMove))
           s.removablePieces(!s.toMove).map(pp=>
             s.stateAfterMove(ShiftRemoveMove(pc,p,pp))
@@ -49,7 +51,7 @@ object StateGenerator {
         else
           List(s.stateAfterMove(ShiftMove(pc,p)))
       }
-    }.flatten.flatten
+    }
   }
 
   private def phaseThreeNextStates(s : MyState) : List[MyState] = {

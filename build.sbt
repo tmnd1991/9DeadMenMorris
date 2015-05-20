@@ -9,7 +9,8 @@ scalacOptions ++= Seq("-optimise", "-deprecation", "-unchecked", "-Yinline-warni
 libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "2.0.2",
   "org.slf4j" % "slf4j-nop" % "1.6.4",
-  "com.h2database" % "h2" % "1.3.173"
+  "com.h2database" % "h2" % "1.3.173",
+  "it.unibo.ing" %% "utils" % "1.0"
 )
 
 assemblySettings

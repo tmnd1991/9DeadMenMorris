@@ -10,8 +10,8 @@ class MyState(val toMove: Boolean,
               val positions: Map[String, Position] = MyState.emptyPositions,
               val removed: Map[Boolean, Int] = Map(true -> 0, false -> 0)) {
 
-  private var _pieces = Map[Boolean, Option[List[Position]]](true -> None, false -> None)
-  private var _bPieces = Map[Boolean, Option[Int]](true -> None, false -> None)
+//  private var _pieces = Map[Boolean, Option[List[Position]]](true -> None, false -> None)
+//  private var _bPieces = Map[Boolean, Option[Int]](true -> None, false -> None)
 
   require(move != null)
   if (onBoard(true) + removed(true) > 9)
@@ -122,11 +122,7 @@ class MyState(val toMove: Boolean,
     new MyState(!toMove, FlyMove(actualO, actualD), phase, newPositions, newRemoved)
   }
 
-  def onBoard(c: Boolean): Int = {
-    if (_pieces(c) == None)
-      pieces(c)
-    _pieces(c).get.size
-  }
+  def onBoard(c: Boolean): Int = pieces(c).size
 
   def nrPieces: Map[Boolean, Int] = {
     val t = onBoard(true)
@@ -140,8 +136,9 @@ class MyState(val toMove: Boolean,
 
   def removable(c: Boolean): List[Position] = positions.values.filter(p => isLegalToRemove(p, !c)).toList
 
-  def hasWon(c: Boolean): Boolean = if (phase == MyPhase.Phase1) false
-  else onBoard(!c) < 3 || cantMove(!c)
+  def hasWon(c: Boolean): Boolean =
+    if (phase == MyPhase.Phase1) false
+    else onBoard(!c) < 3 || cantMove(!c)
 
   def hasLost(c: Boolean): Boolean = hasWon(!c)
 
@@ -158,16 +155,14 @@ class MyState(val toMove: Boolean,
     free == 0 //se sono zero allora non posso muovermi :( LOST
   }
 
-  def pieces(c: Boolean): List[Position] = {
-    if (_pieces(c) == None)
-      _pieces += c -> Some(positions.values.filter(p => p.content == Some(c)).toList)
-    _pieces(c).get
+  val pieces: Map[Boolean,List[Position]] = {
+    Map(true -> positions.values.filter(p => p.content == Some(true)).toList,
+        false-> positions.values.filter(p => p.content == Some(true)).toList)
   }
 
-  def blockedPieces(c: Boolean): Int = {
-    if (_bPieces(c) == None)
-      _bPieces += c -> Some(pieces(c).filter(p => isBlocked(p)).size)
-    _bPieces(c).get
+  val blockedPieces: Map[Boolean,Int] = {
+    Map(true -> pieces(true).filter(p => isBlocked(p)).size,
+        false ->pieces(false).filter(p => isBlocked(p)).size)
   }
 
   def isBlocked(p: Position): Boolean = {
